@@ -1,8 +1,9 @@
-#include <stdio.h>
-#include <helpers.h>
+#include "helpers.h"
 
 int burgerc[NBURGERS] = {0};
 int pizzac[NPIZZAS] = {0};
+
+int tot = 0;
 
 const char *burgers[] =
 {
@@ -17,11 +18,11 @@ const char *pizzas[] = {
     "Pizza tuna",
 };
 
-const int *burgerp = {
+const int burgerp[3] = {
     5, 5, 3
 };
 
-const int *pizzap = {
+const int pizzap[3] = {
     10, 12, 14
 };
 
@@ -45,6 +46,12 @@ int add_order(void)
     }
     while (opt < 1 || opt > 3);
 
+    time_t now;
+    time(&now);
+    struct tm *now_tm = localtime(&now);
+    char dbuff[16];
+    strftime(dbuff, sizeof(dbuff), "%Y/%m/%d", now_tm);
+
     if (opt == 1)
     {
         system("cls");
@@ -64,7 +71,8 @@ int add_order(void)
         while (opt < 1 || opt > NBURGERS);
 
         burgerc[opt - 1]++;
-        fprintf(f, "ORDERED BURGER %s\n", burgers[opt - 1]);
+        tot += burgerp[opt - 1];
+        fprintf(f, "[%s] %-25s %-16s - $%d\n", dbuff, "ORDERED 1 BURGER", burgers[opt - 1], burgerp[opt - 1]);
         printf("%s successfully ordered\n", burgers[opt - 1]);
         system("pause");
     }
@@ -87,7 +95,8 @@ int add_order(void)
         while (opt < 1 || opt > NPIZZAS);
 
         pizzac[opt - 1]++;
-        fprintf(f, "ORDERED PIZZA %s\n", pizzas[opt - 1]);
+        tot += pizzap[opt - 1];
+        fprintf(f, "[%s] %-25s %-16s - $%d\n", dbuff, "ORDERED 1 PIZZA", pizzas[opt - 1], pizzap[opt - 1]);
         printf("%s successfully ordered\n", pizzas[opt - 1]);
         system("pause");
     }
@@ -101,7 +110,7 @@ int add_order(void)
     return 1;
 }
 
-void view(void)
+void view(char uname[48])
 {
     printf("Burgers:\n");
     for (int i = 0; i < NBURGERS; i++)
@@ -112,8 +121,11 @@ void view(void)
     printf("Pizzas:\n");
     for (int i = 0; i < NPIZZAS; i++)
     {
-        printf("%-25s: %-4d orders\n", pizzas[i], pizzac[i]);
+        printf("%-25s: %-4d order(s)\n", pizzas[i], pizzac[i]);
     }
+    printf("==================================================\n");
+    printf("%-25s: $%d\n", "Total", tot);
+    printf("%-25s: %s\n", "Customer", uname);
 }
 
 int remove_order(void)
@@ -139,6 +151,12 @@ int remove_order(void)
     }
     while(opt < 1 || opt > 3);
 
+    time_t now;
+    time(&now);
+    struct tm *now_tm = localtime(&now);
+    char dbuff[16];
+    strftime(dbuff, sizeof(dbuff), "%Y/%m/%d", now_tm);
+
     if (opt == 1)
     {
         system("cls");
@@ -154,7 +172,8 @@ int remove_order(void)
         }
         while (opt < 1 || opt > NBURGERS || burgerc[opt - 1] == 0);
         burgerc[opt - 1]--;
-        fprintf(f, "REMOVED 1 BURGER OF TYPE %s\n", pizzas[opt - 1]);
+        tot -= burgerp[opt - 1];
+        fprintf(f, "[%s] %-25s %-16s - %d\n", dbuff, "REMOVED 1 BURGER", burgers[opt - 1], burgerp[opt - 1]);
         printf("%s successfully removed\n", burgers[opt - 1]);
         system("pause");
     }
@@ -173,7 +192,8 @@ int remove_order(void)
         }
         while (opt < 1 || opt > NPIZZAS || pizzac[opt - 1] == 0);
         pizzac[opt - 1]--;
-        fprintf(f, "REMOVED 1 PIZZA OF TYPE %s\n", pizzas[opt - 1]);
+        tot -= pizzap[opt - 1];
+        fprintf(f, "[%s] %-25s %-16s - $%d\n", dbuff, "REMOVED 1 PIZZA", pizzas[opt - 1], pizzap[opt - 1]);
         printf("%s successfully removed\n", pizzas[opt - 1]);
         system("pause");
     }
@@ -185,4 +205,15 @@ int remove_order(void)
 
     fclose(f);
     return 1;
+}
+
+void exitt(char uname[48])
+{
+    FILE *f = fopen("transactions.txt", "a");
+    if (f == NULL)
+        f = fopen("transactions.txt", "w");
+    fprintf(f, "FINAL TOTAL: $%d\n", tot);
+    fprintf(f, "CUSTOMER NAME: %s\n", uname);
+    fprintf(f, "=======================================\n");
+    fclose(f);
 }
