@@ -112,6 +112,7 @@ int add_order(void)
 
 void view(char uname[48])
 {
+    printf("%-25s: %s\n", "Customer", uname);
     printf("Burgers:\n");
     for (int i = 0; i < NBURGERS; i++)
     {
@@ -125,7 +126,6 @@ void view(char uname[48])
     }
     printf("==================================================\n");
     printf("%-25s: $%d\n", "Total", tot);
-    printf("%-25s: %s\n", "Customer", uname);
 }
 
 int remove_order(void)
@@ -164,11 +164,17 @@ int remove_order(void)
         {
             printf("%d. %-25s : %-4d orders\n", i + 1, burgers[i], burgerc[i]);
         }
-        printf("What do you want to remove?");
+        printf("What do you want to remove? [0 to exit]");
         do
         {
             scanf("%d", &opt);
             getchar();
+
+            if (opt == 0)
+            {
+                fclose(f);
+                return 0;
+            }
         }
         while (opt < 1 || opt > NBURGERS || burgerc[opt - 1] == 0);
         burgerc[opt - 1]--;
